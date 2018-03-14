@@ -1,0 +1,59 @@
+#!/bin/sh
+########################################################################
+# Begin $rc_base/init.d/haveged
+#
+# Description: Haveged uses HAVEGE (HArdware Volatile Entropy Gathering
+#              and Expansion) to fill /dev/random with random bits 
+#              if entropy_available falls under the below configured 
+#              value.
+#
+# Usage	     : ${WAKEUP} contains the responsible value for the 
+#              write_wakeup_threshold daemon. Check entropy_avail in 
+#             /proc/sys/kernel/random and change this value if desired.
+#
+# Author     : Erik Kapfer
+#
+########################################################################
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+DESC="Haveged entropy daemon"
+NAME=haveged
+DAEMON=/usr/sbin/$NAME
+PIDFILE=/var/run/$NAME.pid
+WAKEUP="1000"
+
+. /etc/sysconfig/rc
+. ${rc_functions}
+
+case "${1}" in
+	start)
+		boot_mesg "Starting ${DESC}..."
+		${DAEMON} -w ${WAKEUP} -d ${PIDFILE}
+		evaluate_retval
+		;;
+
+	stop)
+		boot_mesg "Stopping ${DESC}..."
+		killproc ${DAEMON}
+		evaluate_retval
+		;;
+
+	restart)
+		${0} stop
+		sleep 1
+		${0} start
+		;;
+
+	status)
+		statusproc ${DAEMON} ${NAME}
+		;;
+
+	*)
+		echo "Usage: ${0} {start|stop|restart|status}"
+		exit 1
+		;;
+esac
+
+# End $rc_base/init.d/haveged
+
+
